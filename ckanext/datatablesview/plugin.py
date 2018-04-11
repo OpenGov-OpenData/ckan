@@ -1,4 +1,5 @@
 # encoding: utf-8
+import sys
 
 from logging import getLogger
 
@@ -32,6 +33,8 @@ class DataTablesView(p.SingletonPlugin):
         return resource.get(u'datastore_active')
 
     def view_template(self, context, data_dict):
+        reload(sys)
+        sys.setdefaultencoding('utf-8')
         return u'datatables/datatables_view.html'
 
     def form_template(self, context, data_dict):
