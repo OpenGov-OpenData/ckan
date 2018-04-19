@@ -26,15 +26,13 @@ class DataTablesView(p.SingletonPlugin):
         template directory for the view
         '''
         toolkit.add_template_directory(config, u'templates')
-        toolkit.add_resource(u'public', u'ckanext-datatablesview')
+        toolkit.add_resource('public', 'ckanext-datatablesview')
 
     def can_view(self, data_dict):
         resource = data_dict['resource']
         return resource.get(u'datastore_active')
 
     def view_template(self, context, data_dict):
-        reload(sys)
-        sys.setdefaultencoding('utf-8')
         return u'datatables/datatables_view.html'
 
     def form_template(self, context, data_dict):
