@@ -350,7 +350,7 @@ class UserController(base.BaseController):
 
             email_changed = data_dict['email'] != c.userobj.email
 
-            if (data_dict['password1'] and data_dict['password2']) \
+            if (data_dict.get('password1') and data_dict.get('password2')) \
                     or email_changed:
                 identity = {'login': c.user,
                             'password': data_dict['old_password']}
