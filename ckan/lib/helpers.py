@@ -983,6 +983,8 @@ def markdown_extract(text, extract_length=190):
     if not text:
         return ''
     plain = RE_MD_HTML_TAGS.sub('', markdown(text))
+    if plain.endswith("MORE INFO"):
+        plain = plain[:-10]
     if not extract_length or len(plain) < extract_length:
         return literal(plain)
 
@@ -1388,6 +1390,14 @@ def resource_display_name(resource_dict):
     # TODO: (?) support resource objects as well
     name = get_translated(resource_dict, 'name')
     description = get_translated(resource_dict, 'description')
+    # If there isn't a name get name_translated
+    if not name:
+        name_translated = resource_dict.get('name_translated', {})
+        name = name_translated.get('en', None)
+    # If there isn't a description get description_translated
+    if not description:
+        description_translated = resource_dict.get('description_translated', {})
+        description = description_translated.get('en', None)
     if name:
         return name
     elif description:

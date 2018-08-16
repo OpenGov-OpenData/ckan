@@ -6,6 +6,7 @@ import cgitb
 import warnings
 import xml.dom.minidom
 import urllib2
+import datetime
 
 from paste.deploy.converters import asbool
 
@@ -187,12 +188,21 @@ def rebuild(package_id=None, only_missing=False, force=False, refresh=False,
                 )
                 sys.stdout.flush()
             try:
-                package_index.update_dict(
-                    logic.get_action('package_show')(context,
-                        {'id': pkg_id}
-                    ),
-                    defer_commit
+                pkg_dict = logic.get_action('package_show')(
+                    context,
+                    {'id': pkg_id}
                 )
+                # Set metadata_modified to user defined field "modified"
+                pkg_extras = pkg_dict.get('extras',[])
+                modified = pkg_dict.get('metadata_modified',"")[0:10]
+                for item in pkg_extras:
+                    if item.get('key')=='modified':
+                        modified = item.get('value')
+                if modified != pkg_dict.get('metadata_modified',"")[0:10]:
+                    modified = datetime.datetime.strptime(modified, "%Y-%m-%d")
+                    modified = modified.strftime("%Y-%m-%dT%H:%M:%S.%f")
+                    pkg_dict['metadata_modified'] = modified
+                package_index.update_dict(pkg_dict, defer_commit)
             except Exception, e:
                 log.error(u'Error while indexing dataset %s: %s' %
                           (pkg_id, repr(e)))
