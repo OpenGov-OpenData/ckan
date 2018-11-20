@@ -354,13 +354,14 @@ def datastore_delete(context, data_dict):
     model = _get_or_bust(context, 'model')
     resource = model.Resource.get(data_dict['resource_id'])
 
-    if (not data_dict.get('filters') and
-            resource.extras.get('datastore_active') is True):
-        log.debug(
-            'Setting datastore_active=False on resource {0}'.format(
-                resource.id)
-        )
-        set_datastore_active_flag(model, data_dict, False)
+    if (resource is not None):
+        if (not data_dict.get('filters') and
+                resource.extras.get('datastore_active') is True):
+            log.debug(
+                'Setting datastore_active=False on resource {0}'.format(
+                    resource.id)
+            )
+            set_datastore_active_flag(model, data_dict, False)
 
     result.pop('id', None)
     result.pop('connection_url', None)
