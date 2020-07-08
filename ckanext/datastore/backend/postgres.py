@@ -1496,7 +1496,7 @@ def upsert(context, data_dict):
 
 def search(context, data_dict):
     backend = DatastorePostgresqlBackend.get_active_backend()
-    engine = backend._get_write_engine()
+    engine = backend._get_write_search_engine()
     context['connection'] = engine.connect()
     timeout = context.get('query_timeout', _TIMEOUT)
     _cache_types(context['connection'])
@@ -1590,6 +1590,9 @@ class DatastorePostgresqlBackend(DatastoreBackend):
 
     def _get_write_engine(self):
         return _get_engine_from_url(self.write_url)
+
+    def _get_write_search_engine(self):
+        return _get_engine_from_url(self.write_url_search)
 
     def _get_read_engine(self):
         return _get_engine_from_url(self.read_url)
@@ -1707,8 +1710,11 @@ class DatastorePostgresqlBackend(DatastoreBackend):
 
         self.ckan_url = self.config['sqlalchemy.url']
         self.write_url = self.config['ckan.datastore.write_url']
-        self.write_url_search = self.config.get('ckan.datastore.write_url_search') \
-                                or self.config['ckan.datastore.write_url']
+
+        if self.config.get('ckan.datastore.write_url_search'):
+            self.write_url_search = self.config.get('ckan.datastore.write_url_search')
+        else:
+            self.write_url_search = self.config['ckan.datastore.write_url']
 
         self.legacy_mode = self.is_legacy_mode(config)
 
