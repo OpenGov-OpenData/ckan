@@ -71,6 +71,10 @@ _INSERT = 'insert'
 _UPSERT = 'upsert'
 _UPDATE = 'update'
 
+_SQL_FUNCTIONS_ALLOWLIST_FILE = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), u"..", "allowed_functions.txt"
+)
+
 
 if not os.environ.get('DATASTORE_LOAD'):
     ValidationError = toolkit.ValidationError
@@ -1542,6 +1546,16 @@ def search_sql(context, data_dict):
         context['connection'].execute(
             u'SET LOCAL statement_timeout TO {0}'.format(timeout))
 
+        function_names = datastore_helpers.get_function_names_from_sql(context, sql)
+        for f in function_names:
+            for name_variant in [f.lower(), '"{}"'.format(f)]:
+                if name_variant in backend.allowed_sql_functions:
+                    break
+            else:
+                raise toolkit.NotAuthorized({
+                    'permissions': ['Not authorized to call function {}'.format(f)]
+                })
+
         table_names = datastore_helpers.get_table_names_from_sql(context, sql)
         log.debug('Tables involved in input SQL: {0!r}'.format(table_names))
 
@@ -1729,6 +1743,25 @@ class DatastorePostgresqlBackend(DatastoreBackend):
         # Check whether users have disabled datastore_search_sql
         self.enable_sql_search = toolkit.asbool(
             self.config.get('ckan.datastore.sqlsearch.enabled', True))
+
+        if self.enable_sql_search:
+            allowed_sql_functions_file = self.config.get(
+                'ckan.datastore.sqlsearch.enabled', _SQL_FUNCTIONS_ALLOWLIST_FILE
+            )
+
+            def format_entry(line):
+                '''Prepare an entry from the 'allowed_functions' file
+                to be used in the whitelist.
+                Leading and trailing whitespace is removed, and the
+                entry is lowercased unless enclosed in "double quotes".
+                '''
+                entry = line.strip()
+                if not entry.startswith('"'):
+                    entry = entry.lower()
+                return entry
+
+            with open(allowed_sql_functions_file, 'r') as f:
+                self.allowed_sql_functions = set(format_entry(line) for line in f)
 
         # Check whether we are running one of the paster commands which means
         # that we should ignore the following tests.
