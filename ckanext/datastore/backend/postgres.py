@@ -1555,17 +1555,8 @@ def search_sql(context, data_dict):
         context['connection'].execute(
             u'SET LOCAL statement_timeout TO {0}'.format(timeout))
 
-        function_names = datastore_helpers.get_function_names_from_sql(context, sql)
-        for f in function_names:
-            for name_variant in [f.lower(), '"{}"'.format(f)]:
-                if name_variant in backend.allowed_sql_functions:
-                    break
-            else:
-                raise toolkit.NotAuthorized({
-                    'permissions': ['Not authorized to call function {}'.format(f)]
-                })
-
-        table_names, _ = datastore_helpers.get_table_and_function_names_from_sql(context, sql)
+        get_names = datastore_helpers.get_table_and_function_names_from_sql
+        table_names, function_names = get_names(context, sql)
         log.debug('Tables involved in input SQL: {0!r}'.format(table_names))
         log.debug('Functions involved in input SQL: {0!r}'.format(
             function_names))
