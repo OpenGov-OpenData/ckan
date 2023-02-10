@@ -33,13 +33,13 @@ pyjwt==1.7.1              # via -r requirements.in
 pysolr==3.6.0             # via -r requirements.in
 python-dateutil==2.8.2    # via -r requirements.in, alembic, feedgen
 python-editor==1.0.4      # via alembic
-python-magic==0.4.15      # via -r requirements.in
+python-magic>=0.4.15      # via -r requirements.in
 pytz==2016.7              # via -r requirements.in, babel, flask-babel, tzlocal
 pyutilib==5.7.1           # via -r requirements.in
 pyyaml==5.4.1             # via -r requirements.in
 redis==3.5.3              # via rq
 repoze.lru==0.7           # via routes
-repoze.who==2.3           # via -r requirements.in
+repoze.who>=2.3           # via -r requirements.in
 requests==2.25.1          # via -r requirements.in, pysolr
 routes==1.13              # via -r requirements.in
 rq==1.0                   # via -r requirements.in
@@ -56,7 +56,7 @@ webassets==0.12.1         # via -r requirements.in
 webencodings==0.5.1       # via bleach
 webob==1.8.7              # via fanstatic, repoze.who
 werkzeug[watchdog]==1.0.0  # via -r requirements.in, flask
-zope.interface==4.3.2     # via -r requirements.in, repoze.who
+zope.interface>=4.3.2     # via -r requirements.in, repoze.who
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
