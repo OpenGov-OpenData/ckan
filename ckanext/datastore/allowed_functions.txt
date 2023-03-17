@@ -41,6 +41,7 @@ box
 broadcast
 btrim
 cardinality
+cast
 cbrt
 ceil
 ceiling
