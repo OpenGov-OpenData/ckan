@@ -179,6 +179,7 @@ ntile
 num_nonnulls
 num_nulls
 numnode
+on
 over
 parse_ident
 path
