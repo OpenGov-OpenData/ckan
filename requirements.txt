@@ -40,7 +40,7 @@ pyyaml==5.4.1             # via -r requirements.in
 redis==3.5.3              # via rq
 repoze.lru==0.7           # via routes
 repoze.who>=2.3           # via -r requirements.in
-requests==2.25.1          # via -r requirements.in, pysolr
+requests>=2.25.1          # via -r requirements.in, pysolr
 routes==1.13              # via -r requirements.in
 rq==1.0                   # via -r requirements.in
 shutilwhich==1.1.0        # via fanstatic
