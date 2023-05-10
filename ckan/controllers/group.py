@@ -150,7 +150,7 @@ class GroupController(base.BaseController):
         group_type = self._guess_group_type()
 
         page = h.get_page_number(request.params) or 1
-        items_per_page = 21
+        items_per_page = int(config.get('ckan.datasets_per_page', 20))
 
         context = {'model': model, 'session': model.Session,
                    'user': c.user, 'for_view': True,
