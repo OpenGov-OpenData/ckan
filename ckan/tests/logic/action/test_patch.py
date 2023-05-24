@@ -8,6 +8,7 @@ import mock
 from ckan.common import config
 
 from ckan.tests import helpers, factories
+from ckan.logic import ValidationError
 
 
 class TestPatch(helpers.FunctionalTestBase):
@@ -31,6 +32,24 @@ class TestPatch(helpers.FunctionalTestBase):
 
         assert_equals(dataset2['name'], 'somethingnew')
         assert_equals(dataset2['notes'], 'some test now')
+
+    def test_package_patch_invalid_characters_in_resource_id(self):
+        user = factories.User()
+        dataset = factories.Dataset(user=user)
+        data_dict = {
+            'id': dataset["id"],
+            'resources': [
+                {
+                    "id": "../../nope.txt",
+                    "url": "http://data",
+                    "name": "A nice resource",
+                },
+            ]
+        }
+
+        assert_raises(ValidationError,
+                      helpers.call_action,
+                      'package_patch', **data_dict)
 
     def test_resource_patch_updating_single_field(self):
         user = factories.User()

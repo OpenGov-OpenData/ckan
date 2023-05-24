@@ -450,6 +450,42 @@ class TestResourceCreate(object):
         assert_raises(logic.ValidationError, helpers.call_action,
                       'resource_create', **data_dict)
 
+    def test_invalid_characters_in_id(self):
+
+        data_dict = {
+            "id": "../../nope.txt",
+            "package_id": factories.Dataset()["id"],
+            "url": "http://data",
+            "name": "A nice resource",
+        }
+
+        assert_raises(logic.ValidationError, helpers.call_action,
+                      'resource_create', **data_dict)
+
+    def test_id_too_long(self):
+
+        data_dict = {
+            "id": "x" * 111,
+            "package_id": factories.Dataset()["id"],
+            "url": "http://data",
+            "name": "A nice resource",
+        }
+
+        assert_raises(logic.ValidationError, helpers.call_action,
+                      'resource_create', **data_dict)
+
+    def test_id_already_exists(self):
+        data_dict = {
+            'id': 'wont-be-fooled-again',
+            'package_id': factories.Dataset()['id'],
+        }
+        helpers.call_action('resource_create', **data_dict)
+
+        data_dict['package_id'] = factories.Dataset()['id']
+
+        assert_raises(logic.ValidationError, helpers.call_action,
+                      'resource_create', **data_dict)
+
     def test_doesnt_require_url(self):
         user = factories.User()
         dataset = factories.Dataset(user=user)
