@@ -75,12 +75,15 @@ from ckan.logic.validators import (
     package_id_does_not_exist,
     email_validator,
     extras_valid_json,
+    resource_id_validator,
+    resource_id_does_not_exist,
     )
 
 
 def default_resource_schema():
     schema = {
-        'id': [ignore_empty, unicode],
+        'id': [ignore_empty, resource_id_validator,
+               resource_id_does_not_exist, unicode],
         'revision_id': [ignore_missing, unicode],
         'package_id': [ignore],
         'url': [ignore_missing, unicode, remove_whitespace],

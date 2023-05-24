@@ -650,6 +650,24 @@ class TestDatasetUpdate(helpers.FunctionalTestBase):
         assert_equals(resources_[1]['url'], 'http://datahub.io/index.json')
         assert_equals(resources_[1]['position'], 1)
 
+    def test_invalid_characters_in_resource_id(self):
+        user = factories.User()
+        dataset = factories.Dataset(user=user)
+        data_dict = {
+            'id': dataset["id"],
+            'resources': [
+                {
+                    "id": "../../nope.txt",
+                    "url": "http://data",
+                    "name": "A nice resource",
+                },
+            ]
+        }
+
+        assert_raises(logic.ValidationError,
+                      helpers.call_action,
+                      'package_update', **data_dict)
+
     def test_tags(self):
         user = factories.User()
         dataset = factories.Dataset(
