@@ -140,11 +140,14 @@ class AdminController(base.BaseController):
             # purge packages) of form: "this object already exists in the
             # session"
             msgs = []
+            limit = 20
+            selected_for_delition = []
             if ('purge-packages' in request.params) or ('purge-revisions' in
                                                         request.params):
                 if 'purge-packages' in request.params:
                     revs_to_purge = []
-                    for pkg in c.deleted_packages:
+                    for index, pkg in zip(range(limit), c.deleted_packages):
+                        selected_for_delition.append(pkg.id)
                         revisions = [x[0] for x in pkg.all_related_revisions]
                         # ensure no accidental purging of other(non-deleted)
                         # packages initially just avoided purging revisions
@@ -182,7 +185,8 @@ class AdminController(base.BaseController):
                     except Exception, inst:
                         msg = _('Problem purging revision %s: %s') % (id, inst)
                         msgs.append(msg)
-                h.flash_success(_('Purge complete'))
+                h.flash_success(_('Purged {} packages with ids: {}').format(
+                    limit, ', '.join([pkg_id for pkg_id in selected_for_delition])))
             else:
                 msgs.append(_('Action not implemented.'))
 
