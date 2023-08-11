@@ -144,7 +144,7 @@ class AdminController(base.BaseController):
                                                         request.params):
                 if 'purge-packages' in request.params:
                     revs_to_purge = []
-                    limit = 20
+                    limit = 10
                     selected_for_deletion = []
                     for index, pkg in zip(range(limit), c.deleted_packages):
                         selected_for_deletion.append(pkg.id)
@@ -185,7 +185,7 @@ class AdminController(base.BaseController):
                     except Exception, inst:
                         msg = _('Problem purging revision %s: %s') % (id, inst)
                         msgs.append(msg)
-                h.flash_success(_('Purged {} packages: {}').format(
+                h.flash_success(_('Purge {} packages: {}').format(
                     index + 1, ', '.join([pkg_id for pkg_id in selected_for_deletion])))
             else:
                 msgs.append(_('Action not implemented.'))
