@@ -6,7 +6,7 @@
   <ul class="user-list">
     {% for pkg in c.deleted_packages %}
       {% set title = pkg.title or pkg.name %}
-      <li>{{ h.link_to(h.truncate(title, truncate_title), h.url_for(controller='package', action='read', id=pkg.name)) }}</li>
+      <li>{{ loop.index }} {{ h.link_to(h.truncate(title, truncate_title), h.url_for(controller='package', action='read', id=pkg.name)) }}</li>
     {% endfor %}
 
   </ul>
@@ -30,7 +30,7 @@
     </h2>
     <div class="module-content">
       {% trans %}
-        <p>Purge deleted datasets forever and irreversibly.</p>
+        <p>Purge deleted datasets forever and irreversibly, 20 datasets at a time.</p>
       {% endtrans %}
     </div>
   </div>
