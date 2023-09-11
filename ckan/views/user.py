@@ -280,7 +280,9 @@ class EditView(MethodView):
 
         except dictization_functions.DataError:
             base.abort(400, _(u'Integrity Error'))
-        data_dict.setdefault(u'activity_streams_email_notifications', False)
+        data_dict.setdefault(u'activity_streams_email_notifications', 0)
+        if data_dict.get(u'activity_streams_email_notifications'):
+            data_dict[u'activity_streams_email_notifications'] = 1
 
         context[u'message'] = data_dict.get(u'log_message', u'')
         data_dict[u'id'] = id
