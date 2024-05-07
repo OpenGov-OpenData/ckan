@@ -181,7 +181,7 @@ def dump_to(
 
     def result_page(offs, lim):
         return get_action(u'datastore_search')(
-            dict('query_timeout', 90000),
+            {'query_timeout': 90000},
             dict({
                 u'resource_id': resource_id,
                 u'limit': PAGINATE_BY
