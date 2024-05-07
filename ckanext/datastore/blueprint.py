@@ -222,7 +222,7 @@ def dump_to(resource_id, fmt, offset,
 
     def stream_result_page(offs, lim):
         return get_action('datastore_search')(
-            {'user': user},
+            {'user': user, 'query_timeout': 90000},
             dict({
                 'resource_id': resource_id,
                 'limit': PAGINATE_BY
