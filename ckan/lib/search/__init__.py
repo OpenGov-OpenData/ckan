@@ -16,8 +16,9 @@ import ckan.plugins as p
 import ckan.logic as logic
 
 from ckan.lib.search.common import (
-    SearchIndexError, SearchError, SearchQueryError,
-    make_connection, is_available, SolrSettings
+    make_connection, SearchIndexError, SearchQueryError,  # type: ignore
+    SolrConnectionError, # type: ignore
+    SearchError, is_available, SolrSettings
 )
 from ckan.lib.search.index import PackageSearchIndex, NoopSearchIndex
 from ckan.lib.search.query import (
