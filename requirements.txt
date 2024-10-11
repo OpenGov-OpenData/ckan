@@ -50,7 +50,7 @@ sqlparse==0.5.1           # via -r requirements.in
 tzlocal==5.2              # via -r requirements.in
 unicodecsv==0.14.1        # via -r requirements.in
 watchdog==4.0.1           # via -r requirements.in, werkzeug
-webassets==2.0            # via -r requirements.in
+webassets==0.12.1         # via -r requirements.in
 webencodings==0.5.1       # via bleach
 webob==1.8.7              # via fanstatic, repoze.who
 werkzeug[watchdog]==2.2.3 # via -r requirements.in, flask
