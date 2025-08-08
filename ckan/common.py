@@ -8,7 +8,7 @@
 # NOTE:  This file is specificaly created for
 # from ckan.common import x, y, z to be allowed
 
-from collections import MutableMapping
+from collections.abc import MutableMapping
 
 import flask
 import six
