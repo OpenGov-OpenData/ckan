@@ -7,7 +7,7 @@
 alembic==1.13.2           # via -r requirements.in
 babel==2.15.0             # via -r requirements.in, flask-babel
 beaker==1.11.0            # via -r requirements.in
-bleach==6.1.0             # via -r requirements.in
+bleach==6.2.0             # via -r requirements.in
 certifi>=2024.7.4         # via requests
 chardet==5.2.0            # via requests
 click==8.1.7              # via -r requirements.in, flask, rq
