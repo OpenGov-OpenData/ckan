@@ -8,12 +8,16 @@ import ckan.model
 import ckan.plugins as plugins
 from ckan.logic import get_validator
 
+try:
+    getargspec = inspect.getfullargspec
+except AttributeError:
+    from inspect import getargspec
 
 def validator_args(fn):
     u'''collect validator names from argument names
     and pass them to wrapped function'''
 
-    args = inspect.getargspec(fn).args
+    args = getargspec(fn).args
 
     @wraps(fn)
     def wrapper():

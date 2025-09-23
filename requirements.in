@@ -22,7 +22,7 @@ pysolr==3.9.0
 python-dateutil==2.9.0.post0
 pytz
 PyUtilib==6.0.0
-pyyaml==6.0.1
+pyyaml==6.0.2
 repoze.who==2.4.1
 requests>=2.25.1
 Routes==2.5.1
