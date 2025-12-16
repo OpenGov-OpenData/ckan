@@ -203,12 +203,12 @@ def send_invite(user, group_dict=None, role=None):
 
 
 def create_reset_key(user):
-    user.reset_key = text_type(make_key())
+    user.reset_key = make_key()
     model.repo.commit()
 
 
 def make_key():
-    return codecs.encode(os.urandom(16), 'hex')
+    return codecs.encode(os.urandom(16), 'hex').decode()
 
 
 def verify_reset_link(user, key):
