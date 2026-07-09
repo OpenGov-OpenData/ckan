@@ -4,6 +4,7 @@ import codecs
 import os
 import smtplib
 import socket
+import ssl
 import logging
 from time import time
 from email.mime.multipart import MIMEMultipart
@@ -69,12 +70,23 @@ def _mail_recipient(recipient_name, recipient_email,
         # and don't use the smtp.server, starttls, user, password etc. options.
         smtp_server = config['smtp.test_server']
         smtp_starttls = False
+        smtp_starttls_verify = False
+        smtp_starttls_ca_bundle = None
         smtp_user = None
         smtp_password = None
     else:
         smtp_server = config.get('smtp.server', 'localhost')
         smtp_starttls = ckan.common.asbool(
             config.get('smtp.starttls'))
+        smtp_starttls_verify = ckan.common.asbool(
+            config.get('smtp.starttls_verify', True))
+        smtp_starttls_ca_bundle = config.get('smtp.starttls_ca_bundle')
+        if smtp_starttls_ca_bundle and not os.path.exists(
+                smtp_starttls_ca_bundle):
+            raise MailerException(
+                "SMTP CA bundle path (smtp.starttls_ca_bundle) "
+                "does not exist: {0}".format(smtp_starttls_ca_bundle)
+            )
         smtp_user = config.get('smtp.user')
         smtp_password = config.get('smtp.password')
 
@@ -93,7 +105,16 @@ def _mail_recipient(recipient_name, recipient_email,
         # connection into TLS mode.
         if smtp_starttls:
             if smtp_connection.has_extn('STARTTLS'):
-                smtp_connection.starttls()
+                if smtp_starttls_verify:
+                    if smtp_starttls_ca_bundle:
+                        context = ssl.create_default_context(
+                            capath=smtp_starttls_ca_bundle
+                        )
+                    else:
+                        context = ssl.create_default_context()
+                    smtp_connection.starttls(context=context)
+                else:
+                    smtp_connection.starttls()
                 # Re-identify ourselves over TLS connection.
                 smtp_connection.ehlo()
             else:
