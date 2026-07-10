@@ -85,7 +85,7 @@ def _mail_recipient(recipient_name, recipient_email,
                 smtp_starttls_ca_bundle):
             raise MailerException(
                 "SMTP CA bundle path (smtp.starttls_ca_bundle) "
-                "does not exist: {0}".format(smtp_starttls_ca_bundle)
+                f"does not exist: {smtp_starttls_ca_bundle}"
             )
         smtp_user = config.get('smtp.user')
         smtp_password = config.get('smtp.password')
@@ -107,9 +107,19 @@ def _mail_recipient(recipient_name, recipient_email,
             if smtp_connection.has_extn('STARTTLS'):
                 if smtp_starttls_verify:
                     if smtp_starttls_ca_bundle:
-                        context = ssl.create_default_context(
-                            capath=smtp_starttls_ca_bundle
-                        )
+                        if os.path.isfile(smtp_starttls_ca_bundle):
+                            context = ssl.create_default_context(
+                                cafile=smtp_starttls_ca_bundle
+                            )
+                        elif os.path.isdir(smtp_starttls_ca_bundle):
+                            context = ssl.create_default_context(
+                                capath=smtp_starttls_ca_bundle
+                            )
+                        else:
+                            raise MailerException(
+                                "SMTP CA bundle path (smtp.starttls_ca_bundle) "
+                                f"can not be accessed: {smtp_starttls_ca_bundle}"
+                            )
                     else:
                         context = ssl.create_default_context()
                     smtp_connection.starttls(context=context)
