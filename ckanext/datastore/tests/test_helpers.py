@@ -48,6 +48,38 @@ class TestTypeGetters(object):
         for multiple in multiples:
             assert postgres_backend.is_single_statement(multiple) is False
 
+    def test_get_function_names_from_sql_quoted_identifier_bypass(self):
+        '''Quoted calls like "pg_sleep"(2) must be detected same as unquoted.'''
+        get_function_names = datastore_helpers._get_function_names_from_sql
+
+        bypass_shapes = [
+            u'SELECT "pg_sleep"(2)',
+            u'SELECT "pg_sleep" (2)',
+            u'SELECT * FROM (SELECT "pg_sleep"(2)) AS blah LIMIT 5 ;',
+            u'SELECT pg_catalog."pg_sleep"(2)',
+            u'SELECT "pg_sleep"(2)::text',
+            u'SELECT CASE WHEN true THEN "pg_sleep"(2)::text END',
+            u'SELECT 1 FROM generate_series(1,1) '
+            u'WHERE "pg_sleep"(2) IS NOT NULL',
+        ]
+        for sql in bypass_shapes:
+            assert "pg_sleep" in get_function_names(sql), sql
+
+        # still surfaced even when quoted
+        assert get_function_names(u'SELECT "count"(*) FROM t') == ["count"]
+
+        # unquoted calls still work as before
+        assert get_function_names(u"SELECT pg_sleep(2)") == ["pg_sleep"]
+
+        # no false positives from literals/comments that look like calls
+        no_match_cases = [
+            u"""SELECT * FROM t WHERE notes = '"pg_sleep"(2) not code' """,
+            u'SELECT * FROM t -- "pg_sleep"(2) in a comment\n WHERE 1=1',
+            u'SELECT "author" FROM t',
+        ]
+        for sql in no_match_cases:
+            assert "pg_sleep" not in get_function_names(sql), sql
+
     def test_should_fts_index_field_type(self):
         indexable_field_types = ["tsvector", "text", "number"]
 
@@ -148,6 +180,33 @@ class TestGetFunctions(object):
             (u"SELECT * from (SELECT * FROM pg_settings) AS tmp", ["pg_show_all_settings"]),
             (u"SELECT query_to_xml('SELECT max(id) FROM test_a', true, true , '')", ["query_to_xml"]),
             (u"select $$'$$, query_to_xml($X$SELECT table_name FROM information_schema.tables$X$,true,true,$X$$X$), $$'$$", ["query_to_xml"])
+        ]
+
+        context = {"connection": session.connection()}
+        for case in test_cases:
+            assert sorted(
+                datastore_helpers.get_table_and_function_names_from_sql(context, case[0])[1]
+            ) == sorted(case[1])
+
+    def test_get_function_names_quoted_identifier_bypass(self):
+        engine = db.get_write_engine()
+        session = orm.scoped_session(orm.sessionmaker(bind=engine))
+        create_tables = [
+            u"CREATE TABLE test_a (id int, period date, subject_id text, result decimal)",
+        ]
+        for create_table_sql in create_tables:
+            session.execute(create_table_sql)
+
+        test_cases = [
+            (u'SELECT "pg_sleep"(2)', ["pg_sleep"]),
+            (u'SELECT "pg_sleep" (2)', ["pg_sleep"]),
+            (u'SELECT pg_catalog."pg_sleep"(2)', ["pg_sleep"]),
+            (u'SELECT "pg_sleep"(2)::text', ["pg_sleep"]),
+            (
+                u'SELECT CASE WHEN true THEN "pg_sleep"(2)::text END',
+                ["pg_sleep"],
+            ),
+            (u'SELECT "count"(*) FROM test_a', ["count"]),
         ]
 
         context = {"connection": session.connection()}
