@@ -2,9 +2,11 @@
 
 import json
 import logging
+import re
 
 import ckan.common as converters
 import sqlparse
+import sqlparse.tokens
 import six
 
 from six import string_types
@@ -158,20 +160,48 @@ def _parse_query_plan(plan):
     return table_names, queries, functions
 
 
+# sqlparse doesn't tag a quoted call like "pg_sleep"(2) as a Function
+# token, so it skips the allowlist below. Match it as plain text instead.
+_QUOTED_FUNCTION_CALL_RE = re.compile(r'"((?:[^"]|"")*)"\s*\(')
+
+_SCRUBBABLE_TOKEN_TYPES = (
+    sqlparse.tokens.Literal.String.Single,
+    sqlparse.tokens.Comment.Single,
+    sqlparse.tokens.Comment.Multiline,
+)
+
+
+def _scrub_literals_and_comments(sql):
+    '''Blank out string literals and comments (same length, spaces) so a
+    plain-text scan like _QUOTED_FUNCTION_CALL_RE can't be fooled by data
+    or comments that merely look like SQL.'''
+    return ''.join(
+        ' ' * len(token.value) if token.ttype in _SCRUBBABLE_TOKEN_TYPES
+        else token.value
+        for token in sqlparse.parse(sql)[0].flatten()
+    )
+
+
 def _get_function_names_from_sql(sql):
     function_names = []
+
+    def add_function_name(name):
+        if name not in function_names:
+            function_names.append(name)
 
     def _get_function_names(tokens):
         for token in tokens:
             if isinstance(token, sqlparse.sql.Function):
-                function_name = token.get_name()
-                if function_name not in function_names:
-                    function_names.append(function_name)
+                add_function_name(token.get_name())
             if hasattr(token, 'tokens'):
                 _get_function_names(token.tokens)
 
     parsed = sqlparse.parse(sql)[0]
     _get_function_names(parsed.tokens)
+
+    scrubbed = _scrub_literals_and_comments(sql)
+    for match in _QUOTED_FUNCTION_CALL_RE.finditer(scrubbed):
+        add_function_name(match.group(1).replace('""', '"'))
 
     return function_names
 

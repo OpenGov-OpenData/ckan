@@ -1659,6 +1659,27 @@ class TestDatastoreSQLFunctional(object):
 
     @pytest.mark.ckan_config("ckan.plugins", "datastore")
     @pytest.mark.usefixtures("clean_datastore", "with_plugins")
+    def test_not_authorized_with_quoted_disallowed_functions(self):
+        '''Quoting a disallowed function's name must not bypass the check.'''
+        resource = factories.Resource()
+        data = {
+            "resource_id": resource["id"],
+            "force": True,
+            "records": [{"author": "bob"}, {"author": "jane"}],
+        }
+        helpers.call_action("datastore_create", **data)
+
+        disallowed_sqls = [
+            'SELECT "pg_sleep"(0)',
+            'SELECT "pg_sleep" (0)',
+            'SELECT "pg_sleep"(0)::text',
+        ]
+        for sql in disallowed_sqls:
+            with pytest.raises(p.toolkit.NotAuthorized):
+                helpers.call_action("datastore_search_sql", sql=sql)
+
+    @pytest.mark.ckan_config("ckan.plugins", "datastore")
+    @pytest.mark.usefixtures("clean_datastore", "with_plugins")
     def test_allowed_functions_are_case_insensitive(self):
         resource = factories.Resource()
         data = {
